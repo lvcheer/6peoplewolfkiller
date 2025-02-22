@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>三国杀隐私角色分配</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .player-card {
+            position: relative;
+            height: 80px;
+            background-color: #f0f0f0; /* 统一初始背景色 */
+            margin: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+
+        .player-card:hover {
+            transform: scale(1.02);
+        }
+
+        .card-content {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+
+        .front {
+            background-color: #f0f0f0;
+            z-index: 1;
+        }
+
+        .back {
+            display: none;
+            z-index: 2;
+        }
+
+        /* 角色颜色仅应用在背面 */
+        .back.主公 { background-color: #FFB3BA; }
+        .back.忠臣 { background-color: #FFFFBA; }
+        .back.反贼 { background-color: #BAFFC9; }
+        .back.内奸 { background-color: #BAE1FF; }
+
+        .mode-indicator {
+            color: #666;
+            margin: 10px 0;
+            font-style: italic;
+        }
+
+        .instructions {
+            color: #888;
+            margin: 10px 0;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <h1>三国杀6人局角色分配</h1>
+    <button onclick="assignAndDisplay()">生成角色分配</button>
+    <div class="instructions">（点击生成后，让玩家依次点击自己的号码牌查看身份）</div>
+    <div id="result"></div>
+
+    <script>
+        let currentRoles = [];
+
+        function assignRoles() {
+            const isModeA = Math.random() < 0.5;
+            let roles = ['主公'];
+            
+            if (isModeA) {
+                roles.push('反贼', '反贼', '内奸', '内奸', '忠臣');
+            } else {
+                roles.push('反贼', '反贼', '反贼', '内奸', '忠臣');
+            }
+
+            for (let i = roles.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [roles[i], roles[j]] = [roles[j], roles[i]];
+            }
+
+            return {
+                roles: roles,
+                mode: isModeA ? "模式一（2反贼 2内奸 1忠臣）" : "模式二（3反贼 1内奸 1忠臣）"
+            };
+        }
+
+        function createPlayerCard(index, role) {
+            const card = document.createElement('div');
+            card.className = 'player-card';
+            
+            const front = document.createElement('div');
+            front.className = 'card-content front';
+            front.innerHTML = `<strong>玩家 ${index + 1}</strong>`;
+
+            const back = document.createElement('div');
+            back.className = `card-content back ${role}`; // 将角色类添加到背面
+            back.innerHTML = `
+                <strong>玩家 ${index + 1}</strong><br>
+                <span style="font-size: 1.2em">${role}</span>
+            `;
+
+            card.appendChild(front);
+            card.appendChild(back);
+
+            card.addEventListener('click', function() {
+                const isShowing = back.style.display === 'flex';
+                front.style.display = isShowing ? 'flex' : 'none';
+                back.style.display = isShowing ? 'none' : 'flex';
+                
+                // 添加点击态效果
+                card.style.transform = isShowing ? 'scale(1)' : 'scale(0.98)';
+            });
+
+            return card;
+        }
+
+        function assignAndDisplay() {
+            const result = assignRoles();
+            currentRoles = result.roles;
+            const resultDiv = document.getElementById('result');
+            
+            resultDiv.innerHTML = '';
+
+            const modeElement = document.createElement('div');
+            modeElement.className = 'mode-indicator';
+            modeElement.textContent = `当前分配模式：哈哈哈哈你猜` // ${result.mode}`;
+            resultDiv.appendChild(modeElement);
+
+            currentRoles.forEach((role, index) => {
+                resultDiv.appendChild(createPlayerCard(index, role));
+            });
+        }
+    </script>
+</body>
+</html>
