@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>三国杀隐私角色分配</title>
+    <title>三国杀至尊主公版</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -22,19 +22,38 @@
             margin-bottom: 20px;
         }
 
+        @keyframes emperor-glow {
+            0% { box-shadow: 0 0 10px #ff0000; }
+            50% { box-shadow: 0 0 20px #ff0000, 0 0 30px #ff4500; }
+            100% { box-shadow: 0 0 10px #ff0000; }
+        }
+
+        @keyframes scaleUp {
+            0% { transform: scale(0); }
+            80% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
         .player-card {
             position: relative;
             height: 80px;
-            background-color: #f0f0f0; /* 统一初始背景色 */
+            background-color: #f0f0f0;
             margin: 10px;
             border-radius: 8px;
             cursor: pointer;
             overflow: hidden;
-            transition: transform 0.3s;
+            transition: all 0.3s;
         }
 
-        .player-card:hover {
-            transform: scale(1.02);
+        .player-card.emperor {
+            animation: emperor-glow 2s infinite;
+            border: 2px solid gold;
+            background-color: #FFB3BA !important;
+        }
+
+        .player-card.emperor .back {
+            display: flex !important;
+            animation: scaleUp 0.5s ease-out;
         }
 
         .card-content {
@@ -61,7 +80,6 @@
             z-index: 2;
         }
 
-        /* 角色颜色仅应用在背面 */
         .back.主公 { background-color: #FFB3BA; }
         .back.忠臣 { background-color: #FFFFBA; }
         .back.反贼 { background-color: #BAFFC9; }
@@ -83,7 +101,7 @@
 <body>
     <h1>三国杀6人局角色分配</h1>
     <button onclick="assignAndDisplay()">生成角色分配</button>
-    <div class="instructions">（点击生成后，让玩家依次点击自己的号码牌查看身份）</div>
+    <div class="instructions">（主公身份将自动亮出，其他玩家点击查看身份）</div>
     <div id="result"></div>
 
     <script>
@@ -112,30 +130,36 @@
 
         function createPlayerCard(index, role) {
             const card = document.createElement('div');
-            card.className = 'player-card';
+            const isEmperor = role === '主公';
+            card.className = `player-card ${isEmperor ? 'emperor' : ''}`;
             
             const front = document.createElement('div');
             front.className = 'card-content front';
             front.innerHTML = `<strong>玩家 ${index + 1}</strong>`;
 
             const back = document.createElement('div');
-            back.className = `card-content back ${role}`; // 将角色类添加到背面
+            back.className = `card-content back ${role}`;
             back.innerHTML = `
                 <strong>玩家 ${index + 1}</strong><br>
                 <span style="font-size: 1.2em">${role}</span>
             `;
 
+            if (isEmperor) {
+                front.style.display = 'none';
+                back.style.display = 'flex';
+            }
+
             card.appendChild(front);
             card.appendChild(back);
 
-            card.addEventListener('click', function() {
-                const isShowing = back.style.display === 'flex';
-                front.style.display = isShowing ? 'flex' : 'none';
-                back.style.display = isShowing ? 'none' : 'flex';
-                
-                // 添加点击态效果
-                card.style.transform = isShowing ? 'scale(1)' : 'scale(0.98)';
-            });
+            if (!isEmperor) {
+                card.addEventListener('click', function() {
+                    const isShowing = back.style.display === 'flex';
+                    front.style.display = isShowing ? 'flex' : 'none';
+                    back.style.display = isShowing ? 'none' : 'flex';
+                    card.style.transform = isShowing ? 'scale(1)' : 'scale(0.98)';
+                });
+            }
 
             return card;
         }
